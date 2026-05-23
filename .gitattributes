@@ -1,0 +1,1 @@
+*.ipynb filter=strip-notebook-output diff=strip-notebook-output merge=strip-notebook-output
