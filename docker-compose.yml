@@ -2,7 +2,7 @@ services:
   jupyter:
     build: ./jupyter_docker
     ports:
-      - "8888:8888"
+      - "127.0.0.1:8888:8888"
     volumes:
       - ./:/home
     working_dir: /home
