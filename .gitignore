@@ -6,3 +6,4 @@ data/
 .DS_Store
 .AppleDouble
 .LSOverride
+*-pycharm-support-libs/
