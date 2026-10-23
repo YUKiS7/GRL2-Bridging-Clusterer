@@ -14,12 +14,12 @@ All Python runs inside a Docker container (Python 3.12.4, JupyterLab, pandas, nu
 docker compose up --build        # JupyterLab at http://localhost:8888 (no token/password)
 ```
 
-The repo root is mounted at `/home` in the container and is the working directory, so notebook paths are relative to the repo root (e.g. `data/...`).
+The repo root is mounted at `/home` in the container. Notebooks live in `notebooks/`, and a kernel runs in its notebook's folder, so notebook paths are relative to `notebooks/` (e.g. `../data/...`).
 
 Run the notebook headlessly inside the container:
 
 ```sh
-docker exec -i grl2-jupyter-1 jupyter nbconvert --to notebook --execute what-am-i-doing.ipynb --stdout > /dev/null
+docker exec -i grl2-jupyter-1 jupyter nbconvert --to notebook --execute notebooks/01_preprocessing.ipynb --stdout > /dev/null
 ```
 
 ## Git: notebook output stripping
