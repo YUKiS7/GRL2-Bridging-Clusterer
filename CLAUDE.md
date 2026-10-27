@@ -40,6 +40,8 @@ docker exec -i grl2-jupyter-1 jupyter nbconvert --to notebook --execute notebook
 
 ## Notebook pipeline (current state)
 
+All computed columns are snake_case. Only `idAnonymous` and `fastBuilderMode` keep their raw JSON names.
+
 `01_preprocessing.ipynb` keeps all imports in one cell and all constants in a settings cell (`UPPER_CASE`). The logic is split into small helper functions, and each loop collects one dict per row into a DataFrame. Each section starts from the raw `data` independently:
 
 1. **Per-replay features** → `speed_to_block_per_click.csv`, one row per replay.
@@ -48,13 +50,13 @@ docker exec -i grl2-jupyter-1 jupyter nbconvert --to notebook --execute notebook
    - `replay_features(item)`: within that window, computes `blocks_per_click` (total blocks / total clicks) and `avg_speed` (blocks per second) and adds `window_share`. It drops replays with fewer than `MIN_BLOCKS` blocks or zero clicks. Clicks and blocks use `steps[1:]` so they align with `movement`.
 2. **Random windows for the neural network** → `wide_table.csv`, one row per replay and 361 columns.
    - `random_window(steps)`: `RANDOM_WINDOW_SIZE` consecutive steps taken from inside the longest active window, or `None`.
-   - `window_features(item, window)`: produces the columns `idAnonymous`, `fastBuilderMode`, `pingAvg` and `pingJitter`, then `movement_*`, `yawChange_*` and `pitchChange_*` (the change features start at `_1`, with yaw wrapped to -180..180), then `clicks_*`, `sneaking_*` and `blocksChanged_*` (from `_0`).
+   - `window_features(item, window)`: produces the columns `idAnonymous`, `fastBuilderMode`, `ping_avg` and `ping_jitter`, then `movement_*`, `yaw_change_*` and `pitch_change_*` (the change features start at `_1`, with yaw wrapped to -180..180), then `clicks_*`, `sneaking_*` and `blocks_changed_*` (from `_0`).
    - `random.seed(RANDOM_SEED)` is called at the top of the loop cell, so the export is reproducible.
-3. **McPlayHD concept (work in progress)**: a port of `files/mcplayhd_concept_java.txt`, one row per replay. The loop and export cells are still TODO placeholders, and a `# temp cell` for testing sits after the helpers. Its constants are `CONCEPT_WINDOW_SIZE`, `Y_WEIGHT`, `MAX_CLICKS` and `EYE_HEIGHT`.
+3. **McPlayHD concept** → `mcplayhd_concept.csv`, a port of `files/mcplayhd_concept_java.txt` with one row per replay (9419 rows, 547 columns). The loop skips a replay when `best_window_start` or `concept_window_features` returns `None`. Its constants are `CONCEPT_WINDOW_SIZE`, `Y_WEIGHT`, `MAX_CLICKS` and `EYE_HEIGHT`.
    - `last_block_tick(steps)`: the index of the last step that placed a non-`AIR` block, or `None`.
    - `best_window_start(steps, last_tick)`: the start of the `CONCEPT_WINDOW_SIZE` window that ends before `last_tick`, doesn't end lower than it starts, and covers the largest squared distance from start to end (Y weighted by `Y_WEIGHT`). Returns `None` if no window fits. Java falls back to 0 instead.
    - `blocks_before(steps, start)`: a set of `(x, y, z)` tuples of non-`AIR` blocks placed before the window.
-   - `concept_window_features(item, start, already_placed)`: the columns `idAnonymous` and `fastBuilderMode`, then `dx_*`, `dy_*`, `dz_*`, `yaw_change_*` and `pitch_change_*` (from `_1`, yaw wrapped), then `sneaking_*` and `clicks_*` (from `_0`, clicks capped at `MAX_CLICKS`). There's no zero-padding, because every window is full length. Still to do: per-tick `newBlock_*`, plus `blockDx/Dy/Dz_*`, the first new block's offset from the player's eyes (`y + EYE_HEIGHT`). New blocks are also added to `already_placed`, as in Java.
+   - `concept_window_features(item, start, already_placed)`: the columns `idAnonymous` and `fastBuilderMode`, then `dx_*`, `dy_*`, `dz_*`, `yaw_change_*` and `pitch_change_*` (from `_1`, yaw wrapped), then `sneaking_*` and `clicks_*` (from `_0`, clicks capped at `MAX_CLICKS`). After those come per tick (from `_0`) `new_block_*` (1 if the tick placed a block not in `already_placed`) and `block_dx/dy/dz_*`, the first new block's offset from the player's eyes (`y + EYE_HEIGHT`), or 0 if there is no new block. New blocks are added to `already_placed`, as in Java. There's no zero-padding, because every window is full length. It returns `None` if the window has no new block at all (40 replays). That's a deliberate filter: new replays for a later nearest-neighbour lookup must go through the same helpers, and `None` means "not classifiable".
    - The plan is one DataFrame/CSV with the `fastBuilderMode` column. The per-mode split for clustering happens in `02_data-analysis`.
 
-Known data quirks: ping is rarely updated, so `pingJitter` is mostly 0. About 10% of steps have more blocks than clicks, and a few replays have `blocks_per_click` > 1.
+Known data quirks: ping is rarely updated, so `ping_jitter` is mostly 0. About 10% of steps have more blocks than clicks, and a few replays have `blocks_per_click` > 1.
