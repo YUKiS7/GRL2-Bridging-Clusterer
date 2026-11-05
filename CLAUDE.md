@@ -6,8 +6,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 A thesis data-analysis project built around Jupyter notebooks in `notebooks/`. There is no package, build step, linter or test suite. The notebooks are numbered in pipeline order:
 - `00_what-am-i-doing.ipynb`: the original scratch/lab notebook, kept as a record of how the work got here. Its paths still assume the repo root, so it no longer runs as is.
-- `01_preprocessing.ipynb`: loads the raw JSON, builds features and exports them as CSV. No plotting.
-- `02_data-analysis.ipynb`: loads the exported CSVs for plots and clustering (not started yet).
+- `01_sampling.ipynb`: draws a balanced sample (`SAMPLE_PER_MODE` replays per mode) from the bulk data in `data/bulk/` and writes it to `data/sampled_replays.jsonl` (work in progress).
+- `02_preprocessing.ipynb`: loads the raw JSON, builds features and exports them as CSV. No plotting.
+- `03_data-analysis.ipynb`: loads the exported CSVs for plots and clustering.
 
 ## Environment
 
@@ -22,7 +23,7 @@ The repo root is mounted at `/home` in the container. Notebooks live in `noteboo
 Run the notebook headlessly inside the container:
 
 ```sh
-docker exec -i grl2-jupyter-1 jupyter nbconvert --to notebook --execute notebooks/01_preprocessing.ipynb --stdout > /dev/null
+docker exec -i grl2-jupyter-1 jupyter nbconvert --to notebook --execute notebooks/02_preprocessing.ipynb --stdout > /dev/null
 ```
 
 ## Git: notebook output stripping
@@ -35,14 +36,15 @@ docker exec -i grl2-jupyter-1 jupyter nbconvert --to notebook --execute notebook
 
 `data/` and `files/` are gitignored and exist only locally.
 - `data/thesis_data_*.json` is a list of session records. Each record has top-level fields (for example `fastBuilderMode` and `idAnonymous`) and a nested, variable-length `stepData` list.
-- `data/notebooks_exports/` holds the CSVs written by `01_preprocessing` (see below).
-- `files/` holds the thesis proposal (`Thesis_Proposal.pdf`) and `stakeholder_meetings.txt`, which give the project context. It also holds the stakeholder mcplayhd's material: `mcplayhd_concept_java.txt` (the Java plugin draft that section 03 of `01_preprocessing` ports) and `mcplayhd_concept_notebook.ipynb` (their own clustering experiments).
+- `data/bulk/` holds the bulk data from mcplayhd: 50 JSON files (~26 GB) with 10000 replays each, 500000 in total. `idAnonymous` is unique across all files (1..500000). The first file is the old single dataset. The files are too big to load at once inside the container (15.6 GB RAM limit), so code has to go through them one file at a time.
+- `data/notebooks_exports/` holds the CSVs written by `02_preprocessing` (see below).
+- `files/` holds the thesis proposal (`Thesis_Proposal.pdf`) and `stakeholder_meetings.txt`, which give the project context. It also holds the stakeholder mcplayhd's material: `mcplayhd_concept_java.txt` (the Java plugin draft that section 03 of `02_preprocessing` ports) and `mcplayhd_concept_notebook.ipynb` (their own clustering experiments).
 
 ## Notebook pipeline (current state)
 
 All computed columns are snake_case. Only `idAnonymous` and `fastBuilderMode` keep their raw JSON names.
 
-`01_preprocessing.ipynb` keeps all imports in one cell and all constants in a settings cell (`UPPER_CASE`). The logic is split into small helper functions, and each loop collects one dict per row into a DataFrame. Each section starts from the raw `data` independently:
+`02_preprocessing.ipynb` keeps all imports in one cell and all constants in a settings cell (`UPPER_CASE`). The logic is split into small helper functions, and each loop collects one dict per row into a DataFrame. Each section starts from the raw `data` independently:
 
 1. **Per-replay features** → `speed_to_block_per_click.csv`, one row per replay.
    - `movement_per_tick(steps)`: distance moved between consecutive steps (length N-1).
@@ -57,6 +59,6 @@ All computed columns are snake_case. Only `idAnonymous` and `fastBuilderMode` ke
    - `best_window_start(steps, last_tick)`: the start of the `CONCEPT_WINDOW_SIZE` window that ends before `last_tick`, doesn't end lower than it starts, and covers the largest squared distance from start to end (Y weighted by `Y_WEIGHT`). Returns `None` if no window fits. Java falls back to 0 instead.
    - `blocks_before(steps, start)`: a set of `(x, y, z)` tuples of non-`AIR` blocks placed before the window.
    - `concept_window_features(item, start, already_placed)`: the columns `idAnonymous` and `fastBuilderMode`, then `dx_*`, `dy_*`, `dz_*`, `yaw_change_*` and `pitch_change_*` (from `_1`, yaw wrapped), then `sneaking_*` and `clicks_*` (from `_0`, clicks capped at `MAX_CLICKS`). After those come per tick (from `_0`) `new_block_*` (1 if the tick placed a block not in `already_placed`) and `block_dx/dy/dz_*`, the first new block's offset from the player's eyes (`y + EYE_HEIGHT`), or 0 if there is no new block. New blocks are added to `already_placed`, as in Java. There's no zero-padding, because every window is full length. It returns `None` if the window has no new block at all (40 replays). That's a deliberate filter: new replays for a later nearest-neighbour lookup must go through the same helpers, and `None` means "not classifiable".
-   - The plan is one DataFrame/CSV with the `fastBuilderMode` column. The per-mode split for clustering happens in `02_data-analysis`.
+   - The plan is one DataFrame/CSV with the `fastBuilderMode` column. The per-mode split for clustering happens in `03_data-analysis`.
 
 Known data quirks: ping is rarely updated, so `ping_jitter` is mostly 0. About 10% of steps have more blocks than clicks, and a few replays have `blocks_per_click` > 1.
