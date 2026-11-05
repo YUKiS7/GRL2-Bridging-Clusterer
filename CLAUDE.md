@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 A thesis data-analysis project built around Jupyter notebooks in `notebooks/`. There is no package, build step, linter or test suite. The notebooks are numbered in pipeline order:
 - `00_what-am-i-doing.ipynb`: the original scratch/lab notebook, kept as a record of how the work got here. Its paths still assume the repo root, so it no longer runs as is.
-- `01_sampling.ipynb`: draws a balanced sample (`SAMPLE_PER_MODE` replays per mode) from the bulk data in `data/bulk/` and writes it to `data/sampled_replays.jsonl` (work in progress).
+- `01_sampling.ipynb`: draws a balanced sample (`SAMPLE_PER_MODE` replays per mode) from the bulk data in `data/bulk/` and writes it to `data/sampled_replays.jsonl` (70000 replays, one JSON per line, ~7.3 GB). It does two passes over the files (index, then write) and uses `RANDOM_SEED = 18`. Read the jsonl line by line, never all at once.
 - `02_preprocessing.ipynb`: loads the raw JSON, builds features and exports them as CSV. No plotting.
 - `03_data-analysis.ipynb`: loads the exported CSVs for plots and clustering.
 
