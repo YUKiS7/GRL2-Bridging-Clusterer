@@ -6,7 +6,9 @@ RUN pip3 install \
     pandas==3.0.3 \
     numpy==2.4.6 \
     matplotlib==3.10.9 \
-    scikit-learn==1.8.0
+    scikit-learn==1.8.0 \
+    fastapi==0.165.0 \
+    uvicorn==0.54.0
 
 RUN apt-get update && apt-get install -y software-properties-common npm
 RUN npm install n@10.2.0 -g && n 24.15.0

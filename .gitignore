@@ -7,3 +7,8 @@ data/
 .AppleDouble
 .LSOverride
 *-pycharm-support-libs/
+
+# delivery: model files are too big for git, venv is local
+delivery/models/*
+!delivery/models/README.md
+delivery/.venv/

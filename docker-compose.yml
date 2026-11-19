@@ -3,6 +3,7 @@ services:
     build: ./jupyter_docker
     ports:
       - "127.0.0.1:8888:8888"
+      - "127.0.0.1:8000:8000"  # fastapi (delivery/api), started by hand with uvicorn
     volumes:
       - ./:/home
     working_dir: /home

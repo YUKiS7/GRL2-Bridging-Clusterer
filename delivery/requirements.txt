@@ -1,0 +1,7 @@
+# versions pinned to the jupyter container, the joblib models only load with the same scikit-learn
+fastapi==0.165.0
+uvicorn==0.54.0
+scikit-learn==1.8.0
+numpy==2.4.6
+pandas==3.0.3
+joblib==1.6.0
