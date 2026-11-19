@@ -16,7 +16,7 @@ MAX_CLICKS = 1 # clicks per tick get capped at this value
 EYE_HEIGHT = 1.62 # height of the player's eyes above their position
 
 # ---------- k-NN ----------
-KNN_NEIGHBORS = 15
+KNN_NEIGHBOURS = 15
 POSITION_KEY = "reduced"  # training positions in the joblib (after pca)
 
 # ---------- labels ----------
