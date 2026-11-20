@@ -1,0 +1,535 @@
+openapi: 3.1.0
+info:
+  description: "Classifies FastBuilder replays: POST /label returns a cluster label\
+    \ for each replay. GET /clusters describes every cluster with techniques and suspicion\
+    \ levels."
+  title: GRL replay classifier
+  version: 1.0.0
+servers:
+- url: /
+paths:
+  /label:
+    post:
+      operationId: label
+      requestBody:
+        content:
+          application/json:
+            schema:
+              items:
+                $ref: "#/components/schemas/Replay"
+              title: Replays
+              type: array
+              default: null
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LabelResponse"
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
+          description: Validation Error
+      summary: Label
+      tags:
+      - classifier
+      x-content-type: application/json
+      x-accepts:
+      - application/json
+  /clusters:
+    get:
+      operationId: getClusters
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClustersResponse"
+          description: Successful Response
+      summary: Get Clusters
+      tags:
+      - classifier
+      x-accepts:
+      - application/json
+  /version:
+    get:
+      operationId: getVersion
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VersionResponse"
+          description: Successful Response
+      summary: Get Version
+      tags:
+      - classifier
+      x-accepts:
+      - application/json
+  /techniques:
+    get:
+      operationId: getTechniques
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TechniquesResponse"
+          description: Successful Response
+      summary: Get Techniques
+      tags:
+      - classifier
+      x-accepts:
+      - application/json
+  /suspicious_levels:
+    get:
+      operationId: getSuspiciousLevels
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuspiciousLevelsResponse"
+          description: Successful Response
+      summary: Get Suspicious Levels
+      tags:
+      - classifier
+      x-accepts:
+      - application/json
+components:
+  schemas:
+    BlockChange:
+      example:
+        material: material
+        loc:
+          x: 9.301444243932576
+          "y": 3.616076749251911
+          z: 2.027123023002322
+      properties:
+        material:
+          title: Material
+          type: string
+        loc:
+          $ref: "#/components/schemas/Location"
+      required:
+      - loc
+      - material
+      title: BlockChange
+    ClusterDescription:
+      example:
+        id: id
+        cluster_labels:
+        - label: label
+          share: 0.8008281904610115
+        - label: label
+          share: 0.8008281904610115
+        suspicious_levels:
+        - level: level
+          count: 6
+        - level: level
+          count: 6
+      properties:
+        id:
+          title: Id
+          type: string
+        cluster_labels:
+          items:
+            $ref: "#/components/schemas/TechniqueShare"
+          title: Cluster Labels
+          type: array
+          default: null
+        suspicious_levels:
+          items:
+            $ref: "#/components/schemas/SuspiciousCount"
+          title: Suspicious Levels
+          type: array
+          default: null
+      required:
+      - cluster_labels
+      - id
+      - suspicious_levels
+      title: ClusterDescription
+    ClustersResponse:
+      example:
+        model_version: model_version
+        results:
+        - id: id
+          cluster_labels:
+          - label: label
+            share: 0.8008281904610115
+          - label: label
+            share: 0.8008281904610115
+          suspicious_levels:
+          - level: level
+            count: 6
+          - level: level
+            count: 6
+        - id: id
+          cluster_labels:
+          - label: label
+            share: 0.8008281904610115
+          - label: label
+            share: 0.8008281904610115
+          suspicious_levels:
+          - level: level
+            count: 6
+          - level: level
+            count: 6
+      properties:
+        model_version:
+          title: Model Version
+          type: string
+        results:
+          items:
+            $ref: "#/components/schemas/ClusterDescription"
+          title: Results
+          type: array
+          default: null
+      required:
+      - model_version
+      - results
+      title: ClustersResponse
+    HTTPValidationError:
+      example:
+        detail:
+        - loc:
+          - Location_1_inner
+          - Location_1_inner
+          msg: msg
+          type: type
+          input: ""
+          ctx: {}
+        - loc:
+          - Location_1_inner
+          - Location_1_inner
+          msg: msg
+          type: type
+          input: ""
+          ctx: {}
+      properties:
+        detail:
+          items:
+            $ref: "#/components/schemas/ValidationError"
+          title: Detail
+          type: array
+          default: null
+      title: HTTPValidationError
+    LabelResponse:
+      example:
+        model_version: model_version
+        results:
+        - id: 0
+          cluster: cluster
+          confidence: 6.027456183070403
+        - id: 0
+          cluster: cluster
+          confidence: 6.027456183070403
+      properties:
+        model_version:
+          title: Model Version
+          type: string
+        results:
+          items:
+            $ref: "#/components/schemas/LabelResult"
+          title: Results
+          type: array
+          default: null
+      required:
+      - model_version
+      - results
+      title: LabelResponse
+    LabelResult:
+      example:
+        id: 0
+        cluster: cluster
+        confidence: 6.027456183070403
+      properties:
+        id:
+          title: Id
+          type: integer
+        cluster:
+          nullable: true
+          type: string
+        confidence:
+          nullable: true
+          type: number
+      required:
+      - cluster
+      - confidence
+      - id
+      title: LabelResult
+    Location:
+      example:
+        x: 9.301444243932576
+        "y": 3.616076749251911
+        z: 2.027123023002322
+      properties:
+        x:
+          title: X
+          type: number
+        "y":
+          title: "Y"
+          type: number
+        z:
+          title: Z
+          type: number
+      required:
+      - x
+      - "y"
+      - z
+      title: Location
+    Position:
+      example:
+        x: 6.027456183070403
+        "y": 1.4658129805029452
+        z: 5.962133916683182
+        yaw: 5.637376656633329
+        pitch: 2.3021358869347655
+      properties:
+        x:
+          title: X
+          type: number
+        "y":
+          title: "Y"
+          type: number
+        z:
+          title: Z
+          type: number
+        yaw:
+          title: Yaw
+          type: number
+        pitch:
+          title: Pitch
+          type: number
+      required:
+      - pitch
+      - x
+      - "y"
+      - yaw
+      - z
+      title: Position
+    Replay:
+      description: one replay
+      example:
+        idAnonymous: 0
+        fastBuilderMode: fastBuilderMode
+        stepData:
+        - playerPosition:
+            x: 6.027456183070403
+            "y": 1.4658129805029452
+            z: 5.962133916683182
+            yaw: 5.637376656633329
+            pitch: 2.3021358869347655
+          sneaking: true
+          clicks: 7
+          blocksChanged:
+          - material: material
+            loc:
+              x: 9.301444243932576
+              "y": 3.616076749251911
+              z: 2.027123023002322
+          - material: material
+            loc:
+              x: 9.301444243932576
+              "y": 3.616076749251911
+              z: 2.027123023002322
+        - playerPosition:
+            x: 6.027456183070403
+            "y": 1.4658129805029452
+            z: 5.962133916683182
+            yaw: 5.637376656633329
+            pitch: 2.3021358869347655
+          sneaking: true
+          clicks: 7
+          blocksChanged:
+          - material: material
+            loc:
+              x: 9.301444243932576
+              "y": 3.616076749251911
+              z: 2.027123023002322
+          - material: material
+            loc:
+              x: 9.301444243932576
+              "y": 3.616076749251911
+              z: 2.027123023002322
+      properties:
+        idAnonymous:
+          title: Idanonymous
+          type: integer
+        fastBuilderMode:
+          title: Fastbuildermode
+          type: string
+        stepData:
+          items:
+            $ref: "#/components/schemas/Step"
+          title: Stepdata
+          type: array
+          default: null
+      required:
+      - fastBuilderMode
+      - idAnonymous
+      - stepData
+      title: Replay
+    Step:
+      example:
+        playerPosition:
+          x: 6.027456183070403
+          "y": 1.4658129805029452
+          z: 5.962133916683182
+          yaw: 5.637376656633329
+          pitch: 2.3021358869347655
+        sneaking: true
+        clicks: 7
+        blocksChanged:
+        - material: material
+          loc:
+            x: 9.301444243932576
+            "y": 3.616076749251911
+            z: 2.027123023002322
+        - material: material
+          loc:
+            x: 9.301444243932576
+            "y": 3.616076749251911
+            z: 2.027123023002322
+      properties:
+        playerPosition:
+          $ref: "#/components/schemas/Position"
+        sneaking:
+          title: Sneaking
+          type: boolean
+        clicks:
+          title: Clicks
+          type: integer
+        blocksChanged:
+          items:
+            $ref: "#/components/schemas/BlockChange"
+          title: Blockschanged
+          type: array
+          default: null
+      required:
+      - blocksChanged
+      - clicks
+      - playerPosition
+      - sneaking
+      title: Step
+    SuspiciousCount:
+      example:
+        level: level
+        count: 6
+      properties:
+        level:
+          title: Level
+          type: string
+        count:
+          title: Count
+          type: integer
+      required:
+      - count
+      - level
+      title: SuspiciousCount
+    SuspiciousLevelsResponse:
+      example:
+        model_version: model_version
+        results:
+        - results
+        - results
+      properties:
+        model_version:
+          title: Model Version
+          type: string
+        results:
+          items:
+            type: string
+          title: Results
+          type: array
+          default: null
+      required:
+      - model_version
+      - results
+      title: SuspiciousLevelsResponse
+    TechniqueShare:
+      example:
+        label: label
+        share: 0.8008281904610115
+      properties:
+        label:
+          title: Label
+          type: string
+        share:
+          title: Share
+          type: number
+      required:
+      - label
+      - share
+      title: TechniqueShare
+    TechniquesResponse:
+      example:
+        model_version: model_version
+        results:
+        - results
+        - results
+      properties:
+        model_version:
+          title: Model Version
+          type: string
+        results:
+          items:
+            type: string
+          title: Results
+          type: array
+          default: null
+      required:
+      - model_version
+      - results
+      title: TechniquesResponse
+    ValidationError:
+      example:
+        loc:
+        - Location_1_inner
+        - Location_1_inner
+        msg: msg
+        type: type
+        input: ""
+        ctx: {}
+      properties:
+        loc:
+          items:
+            $ref: "#/components/schemas/Location_1_inner"
+          title: Location
+          type: array
+          default: null
+        msg:
+          title: Message
+          type: string
+        type:
+          title: Error Type
+          type: string
+        input:
+          title: Input
+        ctx:
+          title: Context
+          type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    VersionResponse:
+      example:
+        model_version: model_version
+      properties:
+        model_version:
+          title: Model Version
+          type: string
+      required:
+      - model_version
+      title: VersionResponse
+    Location_1_inner:
+      anyOf:
+      - type: string
+      - type: integer
+

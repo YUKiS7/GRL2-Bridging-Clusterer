@@ -12,3 +12,6 @@ data/
 delivery/models/*
 !delivery/models/README.md
 delivery/.venv/
+
+# python bytecode caches
+__pycache__/
