@@ -73,6 +73,19 @@ class ClustersResponse(BaseModel):
     results: list[ClusterDescription]
 
 
+# ---------- GET /techniques ----------
+class TechniquesResponse(BaseModel):
+    model_version: str
+    results: list[str]
+
+
+# ---------- GET /suspicious_levels ----------
+class SuspiciousLevelsResponse(BaseModel):
+    model_version: str
+    results: list[str]
+
+
+
 # ---------- GET /version ----------
 class VersionResponse(BaseModel):
     model_version: str

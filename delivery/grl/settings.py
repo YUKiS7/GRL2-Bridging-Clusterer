@@ -1,23 +1,13 @@
-"""all constants in one place (same values as in 02_preprocessing, must stay in sync with the trained models)"""
+"""server constants. everything that belongs to a model (version, feature settings, votes) is in the model bundle, not here"""
 from pathlib import Path
 
 # ---------- paths ----------
 # delivery/models/, found relative to this file, so it works no matter where the server is started from
 MODELS_DIR = Path(__file__).resolve().parent.parent / "models"
 
-MODEL_VERSION = "v3_noclicks"  # sent with every response
-CLUSTERING_MODEL_PATH = MODELS_DIR / "clustering_model.joblib"
-CLUSTERS_VOTED_LABELS_PATH = MODELS_DIR / "clusters_voted_labels.csv"
-
-# ---------- mcplayhd concept ----------
-CONCEPT_WINDOW_SIZE = 50 # window size in ticks for mcplayhd's approach
-Y_WEIGHT = 0.5 # weight of the y distance when searching for the best window
-MAX_CLICKS = 1 # clicks per tick get capped at this value
-EYE_HEIGHT = 1.62 # height of the player's eyes above their position
-
-# ---------- k-NN ----------
-KNN_NEIGHBOURS = 15
-POSITION_KEY = "reduced"  # training positions in the joblib (after pca)
+API_VERSION = "1.0.0"  # version of the endpoints/schemas, raise it when they change (then regenerate the java client)
+# one file with everything, swap it to swap the model: model_version, feature_settings, modes (per-mode models), cluster_votes (written by 04)
+MODEL_BUNDLE_PATH = MODELS_DIR / "model_bundle.joblib"
 
 # ---------- labels ----------
 # suspicious 0-3 from replay_labels.csv -> name in the api

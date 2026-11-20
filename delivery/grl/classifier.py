@@ -2,7 +2,7 @@
 import pandas as pd
 
 from grl.features import replay_to_row
-from grl.model_store import get_knn, get_clustering_model
+from grl.model_store import get_knn, get_clustering_model, get_feature_settings
 
 
 def cluster_id(mode, cluster):
@@ -30,7 +30,8 @@ def classify(replays):
     keeps the input order, and every input id appears in the output
     """
 
-    replay_rows = [replay_to_row(replay) for replay in replays]
+    feature_settings = get_feature_settings()
+    replay_rows = [replay_to_row(replay, feature_settings) for replay in replays]
     df_replays = pd.DataFrame([row for row in replay_rows if row is not None])
 
     predictions = {}

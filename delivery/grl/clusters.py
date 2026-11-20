@@ -1,23 +1,15 @@
 """cluster descriptions for GET /clusters, built from cluster_labels_<method>.csv (output of 04)"""
-import ast
-
 from grl.model_store import get_clusters_voted_labels
 from grl.settings import SUSPICIOUS_LEVELS
-
-
-def parse_votes(text):
-    """technique_votes / suspicious_votes are saved as str of a dict in the csv -> back to a dict"""
-    return ast.literal_eval(text)
-
 
 def describe_clusters():
     """list of dicts {id, cluster_labels: [{label, share}], suspicious_levels: [{level, count}]}, all 4 levels always present"""
     result = []
-    for row in get_clusters_voted_labels().to_dict("records"):
-        cluster_votes = parse_votes(row["technique_votes"])
+    for row in get_clusters_voted_labels():
+        cluster_votes = row["technique_votes"]
         cluster_votes_list = []
 
-        suspicious_votes = parse_votes(row["suspicious_votes"])
+        suspicious_votes = row["suspicious_votes"]
         suspicious_votes_list = []
 
         for label, share in cluster_votes.items():
@@ -50,4 +42,4 @@ def technique_names():
             if technique not in result:
                 result.append(technique)
 
-    return result
+    return sorted(result)
