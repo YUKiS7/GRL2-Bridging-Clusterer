@@ -38,6 +38,8 @@ def classify(replays):
 
     if not df_replays.empty:
         for mode, df_mode in df_replays.groupby("fastBuilderMode"):
+            if mode not in get_clustering_model():
+                continue
             positions_transformed = to_model_space(get_clustering_model()[mode], df_mode)
             knn_model = get_knn(mode)
 

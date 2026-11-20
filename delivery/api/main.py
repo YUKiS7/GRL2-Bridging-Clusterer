@@ -13,11 +13,12 @@ app = FastAPI(
     title="GRL replay classifier",
     version=API_VERSION,  # api version, not the model version (that one is in every response)
     description=(
-        "Classifies FastBuilder replays: POST /label returns a cluster label for each replay."
+        "Classifies FastBuilder replays: POST /label returns a cluster label for each replay. "
         "GET /clusters describes every cluster with techniques and suspicion levels."
     ),
 )
 
-app.include_router(label.router)
-app.include_router(clusters.router)
-app.include_router(meta.router)
+# the tag groups the endpoints in /docs and names the java class: "classifier" -> ClassifierApi
+app.include_router(label.router, tags=["classifier"])
+app.include_router(clusters.router, tags=["classifier"])
+app.include_router(meta.router, tags=["classifier"])
