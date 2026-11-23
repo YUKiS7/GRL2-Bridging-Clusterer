@@ -12,6 +12,7 @@ data/
 delivery/models/*
 !delivery/models/README.md
 delivery/.venv/
+delivery/openapi-generator-cli.jar
 
 # python bytecode caches
 __pycache__/

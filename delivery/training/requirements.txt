@@ -1,0 +1,4 @@
+# the server packages plus what the training notebook needs, versions pinned to the jupyter container
+-r ../requirements.txt
+jupyterlab==4.5.7
+matplotlib==3.10.9
