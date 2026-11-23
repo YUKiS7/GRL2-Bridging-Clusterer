@@ -75,13 +75,17 @@ Input: a list of replays in the same JSON format as the thesis data. Only these 
       - `y` 
       - `z`
 
+All of these fields are required. If even one replay in the list misses a field or has a wrong type, the **whole request** is rejected with HTTP 422 (the response says which replay and field), and no replay gets classified.
+
 Output: one result per replay, **in the same order as sent**:
 
 - `id`: the `idAnonymous` you sent
 - `cluster`: e.g. `EXTRASHORT_1`, key for `/clusters`
 - `confidence`: 0–1, the share of the 15 most similar training replays that are in this cluster. 1.0 means all of them agree; low values mean the replay sits between clusters.
 
-`cluster` and `confidence` are `null` when a replay can't be classified: the model looks at a 50-tick window of building, so replays that place no block or are too short for such a window are skipped.
+`cluster` and `confidence` are `null` when a replay can't be classified:
+- the model looks at a 50-tick window of building, so replays that place no block or are too short for such a window are skipped
+- the `fastBuilderMode` is not one the model was trained on (e.g. a new mode)
 
 ### GET /clusters
 
